@@ -3,17 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Gig Metronome</title>
     <style>
         html {
             height: 100%;
             overscroll-behavior: none;
         }
+        :root {
+            --bg: #F0EEE6;
+            --text: #2b2822;
+            --text-dim: #8a8577;
+            --dot-bg: #e3dfd2;
+            --dot-border: #c9c3b0;
+            --dot-accent-border: #a8a08a;
+            --dot-active: #2b2822;
+            --dot-active-accent: #c1440e;
+            --btn-bg: #e3dfd2;
+            --btn-border: #c9c3b0;
+            --btn-active-bg: #d5d0c0;
+            --play-bg: #2b2822;
+            --play-text: #F0EEE6;
+            --play-stop-bg: #55503f;
+            --play-stop-border: #6e6851;
+            --modal-bg: #F0EEE6;
+            --row-bg: #e8e4d8;
+            --row-border: #d5d0c0;
+            --input-bg: #e3dfd2;
+            --input-border: #c9c3b0;
+            --del-bg: #c1440e;
+            --del-text: #F0EEE6;
+            --grain-opacity: 0.35;
+            --grain-blend: multiply;
+        }
+        [data-theme="dark"] {
+            --bg: #121212;
+            --text: #ffffff;
+            --text-dim: #9a978d;
+            --dot-bg: #262626;
+            --dot-border: #3d3d3d;
+            --dot-accent-border: #55503f;
+            --dot-active: #ffffff;
+            --dot-active-accent: #ff8a3d;
+            --btn-bg: #1e1e1e;
+            --btn-border: #3d3d3d;
+            --btn-active-bg: #2c2c2c;
+            --play-bg: #ffffff;
+            --play-text: #121212;
+            --play-stop-bg: #333333;
+            --play-stop-border: #555555;
+            --modal-bg: #121212;
+            --row-bg: #1a1a1a;
+            --row-border: #333333;
+            --input-bg: #1e1e1e;
+            --input-border: #3d3d3d;
+            --del-bg: #ff453a;
+            --del-text: #ffffff;
+            --grain-opacity: 0.25;
+            --grain-blend: screen;
+        }
         body {
-            background-color: #F0EEE6;
-            color: #2b2822;
+            background-color: var(--bg);
+            color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 10px;
@@ -34,6 +84,7 @@
             inset: 0;
             overscroll-behavior: none;
             touch-action: manipulation;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         #grain-overlay {
             position: fixed;
@@ -41,9 +92,9 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 1;
-            opacity: 0.5;
-            mix-blend-mode: multiply;
+            z-index: 20;
+            opacity: var(--grain-opacity);
+            mix-blend-mode: var(--grain-blend);
         }
         .container {
             width: 100%;
@@ -55,12 +106,31 @@
             flex-grow: 1;
             justify-content: center;
         }
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            align-items: center;
+            gap: 8px;
+        }
         h1 {
             font-size: 1.2rem;
-            color: #8a8577;
-            margin: 0 0 5px 0;
+            color: var(--text-dim);
+            margin: 0;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+        .top-btns {
+            display: flex;
+            gap: 8px;
+            flex: none;
+        }
+        #btn-theme {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            width: auto;
         }
         #song-title {
             font-size: 1.8rem;
@@ -71,6 +141,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 10px;
+            color: var(--text);
         }
         #dots-container {
             display: flex;
@@ -84,22 +155,22 @@
         .dot {
             width: 50px;
             height: 50px;
-            background-color: #e3dfd2;
+            background-color: var(--dot-bg);
             border-radius: 50%;
-            border: 3px solid #c9c3b0;
+            border: 3px solid var(--dot-border);
             transition: background-color 0.05s ease, transform 0.05s ease;
         }
         .dot.accent {
-            border-color: #a8a08a;
+            border-color: var(--dot-accent-border);
         }
         .dot.active {
-            background-color: #2b2822 !important;
-            border-color: #2b2822;
+            background-color: var(--dot-active) !important;
+            border-color: var(--dot-active) !important;
             transform: scale(1.08);
         }
         .dot.active.accent {
-            background-color: #c1440e !important;
-            border-color: #c1440e;
+            background-color: var(--dot-active-accent) !important;
+            border-color: var(--dot-active-accent) !important;
         }
         #bpm-row {
             display: flex;
@@ -112,9 +183,9 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            border: 2px solid #c9c3b0;
-            background: #e3dfd2;
-            color: #2b2822;
+            border: 2px solid var(--btn-border);
+            background: var(--btn-bg);
+            color: var(--text);
             font-size: 1.5rem;
             line-height: 1;
             padding: 0;
@@ -123,9 +194,13 @@
         #bpm-display {
             font-size: 4.2rem;
             font-weight: bold;
-            color: #2b2822;
+            color: var(--text);
             margin: 0;
             min-width: 150px;
+        }
+        #time-sig-label {
+            font-size: 1rem;
+            color: var(--text-dim);
         }
         .controls {
             display: flex;
@@ -139,19 +214,19 @@
             padding: 16px 0;
             font-size: 1.05rem;
             font-weight: bold;
-            border: 2px solid #c9c3b0;
+            border: 2px solid var(--btn-border);
             border-radius: 12px;
-            background-color: #e3dfd2;
-            color: #2b2822;
+            background-color: var(--btn-bg);
+            color: var(--text);
             cursor: pointer;
             touch-action: manipulation;
         }
         button:active {
-            background-color: #d5d0c0;
+            background-color: var(--btn-active-bg);
         }
         #btn-play {
-            background-color: #2b2822;
-            color: #F0EEE6;
+            background-color: var(--play-bg);
+            color: var(--play-text);
             font-size: 1.4rem;
             margin-bottom: 8px;
             width: 100%;
@@ -160,9 +235,9 @@
             padding: 18px 0;
         }
         #btn-play.stop {
-            background-color: #55503f;
-            color: #F0EEE6;
-            border: 2px solid #6e6851;
+            background-color: var(--play-stop-bg);
+            color: var(--play-text);
+            border: 2px solid var(--play-stop-border);
         }
         #tap-row {
             display: flex;
@@ -171,15 +246,9 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-        #btn-tap {
-            background: #e3dfd2;
-            border-color: #c9c3b0;
-        }
         #btn-sound {
             flex: none;
             width: 60px;
-            border-color: #c9c3b0;
-            background: #e3dfd2;
             font-size: 1.3rem;
         }
         #btn-sound.muted {
@@ -189,7 +258,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #F0EEE6;
+            background: var(--modal-bg);
             z-index: 10;
             flex-direction: column;
             padding: 20px;
@@ -201,14 +270,15 @@
             width: 100%;
             margin: auto;
             text-align: left;
+            color: var(--text);
         }
         input, select {
             width: 100%;
             padding: 12px;
             margin: 8px 0 15px 0;
-            background: #e3dfd2;
-            border: 1px solid #c9c3b0;
-            color: #2b2822;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text);
             font-size: 1rem;
             border-radius: 8px;
             box-sizing: border-box;
@@ -217,11 +287,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #e8e4d8;
+            background: var(--row-bg);
             padding: 10px;
             margin-bottom: 8px;
             border-radius: 8px;
-            border: 1px solid #d5d0c0;
+            border: 1px solid var(--row-border);
             gap: 8px;
         }
         .song-row .row-btns {
@@ -235,9 +305,17 @@
             border-radius: 6px;
             flex: none;
         }
-        .btn-edit { background:#d5d0c0; border:1px solid #b8b19c; color: #2b2822; }
-        .btn-del { background:#c1440e; border:none; color: #F0EEE6; }
-        .btn-move { background:#d5d0c0; border:1px solid #b8b19c; color: #2b2822; }
+        .btn-del {
+            background: var(--del-bg) !important;
+            border: none !important;
+            color: var(--del-text) !important;
+        }
+        .add-box {
+            background: var(--row-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -251,9 +329,12 @@
     </svg>
 
     <div class="container">
-        <div style="display: flex; justify-content: space-between; width: 100%; max-width: 500px; align-items: center;">
-            <h1 id="song-index" style="margin:0;">Song 1</h1>
-            <button onclick="openModal()" style="padding: 8px 12px; font-size: 0.9rem; flex: none; border-radius: 8px;">⚙️ SETLIST</button>
+        <div class="top-row">
+            <h1 id="song-index">Song 1</h1>
+            <div class="top-btns">
+                <button id="btn-theme" onclick="toggleTheme()">🌙</button>
+                <button onclick="openModal()" style="padding: 8px 12px; font-size: 0.9rem; width: auto;">⚙️ SETLIST</button>
+            </div>
         </div>
 
         <div id="song-title">First Song Title</div>
@@ -264,7 +345,7 @@
             <div id="bpm-display">120</div>
             <button class="bpm-btn" onclick="changeBpm(1)">+</button>
         </div>
-        <div style="font-size: 1rem; color: #8a8577;" id="time-sig-label">4/4 TIME</div>
+        <div id="time-sig-label">4/4 TIME</div>
     </div>
 
     <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
@@ -283,7 +364,7 @@
         <div class="modal-content">
             <h2 id="editor-heading">Add New Song</h2>
 
-            <div style="background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <div class="add-box">
                 <label>Song Title:</label>
                 <input type="text" id="new-title" placeholder="e.g. My New Song">
                 <label>BPM (Tempo):</label>
@@ -296,14 +377,14 @@
                     <option value="6">6 (6/8)</option>
                     <option value="2">2 (2/4)</option>
                 </select>
-                <button id="btn-save-song" onclick="saveSong()" style="background: #fff; color: #000; width: 100%; margin-top: 5px;">ADD SONG</button>
-                <button id="btn-cancel-edit" onclick="cancelEdit()" style="display:none; background:#333; width: 100%; margin-top: 8px;">CANCEL EDIT</button>
+                <button id="btn-save-song" onclick="saveSong()" style="background: var(--play-bg); color: var(--play-text); width: 100%; margin-top: 5px; border: none;">ADD SONG</button>
+                <button id="btn-cancel-edit" onclick="cancelEdit()" style="display:none; width: 100%; margin-top: 8px;">CANCEL EDIT</button>
             </div>
 
             <h3>Current Songs:</h3>
             <div id="song-list-editor"></div>
 
-            <button onclick="closeModal()" style="background: #333; width: 100%; margin-top: 20px;">CLOSE & SAVE</button>
+            <button onclick="closeModal()" style="width: 100%; margin-top: 20px;">CLOSE & SAVE</button>
         </div>
     </div>
 
@@ -331,6 +412,26 @@
         let currentBeat = 0;
         let editingIndex = null;
         let wakeLock = null;
+
+        // --- Theme ---
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('btn-theme').innerText = theme === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('gig_theme', theme);
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        }
+        (function initTheme() {
+            const saved = localStorage.getItem('gig_theme');
+            if (saved) {
+                applyTheme(saved);
+            } else {
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                applyTheme(prefersDark ? 'dark' : 'light');
+            }
+        })();
 
         // --- Audio setup ---
         let audioCtx = null;
@@ -399,6 +500,7 @@
 
         function updateView() {
             stopMetronome();
+            liveBpm = null;
             if (playlist.length === 0) {
                 songIndexEl.innerText = "No Songs";
                 songTitleEl.innerText = "Add songs via settings";
@@ -430,11 +532,16 @@
             updateView();
         }
 
+        // liveBpm holds a temporary tempo override for the current song (from +/- or tap),
+        // used only for this viewing session. It is NOT saved to the playlist and resets
+        // to the stored value whenever you switch songs (updateView).
+        let liveBpm = null;
+
         function changeBpm(delta) {
             if (playlist.length === 0) return;
-            playlist[currentIndex].bpm = Math.max(20, Math.min(300, playlist[currentIndex].bpm + delta));
-            bpmDisplayEl.innerText = playlist[currentIndex].bpm;
-            savePlaylist();
+            const base = liveBpm ?? playlist[currentIndex].bpm;
+            liveBpm = Math.max(20, Math.min(300, base + delta));
+            bpmDisplayEl.innerText = liveBpm;
             if (isPlaying) { stopMetronome(); startMetronome(); }
         }
 
@@ -450,9 +557,8 @@
                 const avg = intervals.reduce((a,b) => a+b, 0) / intervals.length;
                 const bpm = Math.round(60000 / avg);
                 if (playlist.length > 0 && bpm >= 20 && bpm <= 300) {
-                    playlist[currentIndex].bpm = bpm;
+                    liveBpm = bpm;
                     bpmDisplayEl.innerText = bpm;
-                    savePlaylist();
                     if (isPlaying) { stopMetronome(); startMetronome(); }
                 }
             }
@@ -461,7 +567,7 @@
         function startMetronome() {
             if (playlist.length === 0) return;
             ensureAudio();
-            const bpm = playlist[currentIndex].bpm;
+            const bpm = liveBpm ?? playlist[currentIndex].bpm;
             const interval = (60 / bpm) * 1000;
 
             isPlaying = true;
@@ -533,12 +639,12 @@
                 row.innerHTML = `
                     <div>
                         <strong>${index + 1}. ${song.title}</strong><br>
-                        <span style="color:#8a8577; font-size:0.9rem;">${song.bpm} BPM (${song.beats}/4)</span>
+                        <span style="color:var(--text-dim); font-size:0.9rem;">${song.bpm} BPM (${song.beats}/4)</span>
                     </div>
                     <div class="row-btns">
-                        <button class="btn-move" onclick="moveSong(${index}, -1)">↑</button>
-                        <button class="btn-move" onclick="moveSong(${index}, 1)">↓</button>
-                        <button class="btn-edit" onclick="editSong(${index})">EDIT</button>
+                        <button onclick="moveSong(${index}, -1)">↑</button>
+                        <button onclick="moveSong(${index}, 1)">↓</button>
+                        <button onclick="editSong(${index})">EDIT</button>
                         <button class="btn-del" onclick="deleteSong(${index})">DEL</button>
                     </div>
                 `;
